@@ -1,9 +1,10 @@
 # EutherCommand
 
 
-**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
-IR wakes the Logitech volume display but has not been shown to change the volume.
-Earlier successful-response notes below are historical and superseded.
+**Physical confirmation, 2026-10-10:** after the NEC repeat-frame correction and
+fast Wi-Fi/app update, the user reports “Det funkar kanon!”. The at-TV volume
+trial is now user-confirmed. Earlier single-frame results remain superseded;
+this does not verify a second installation or spoken multi-TV routing.
 
 **Give the Digital World Hands.** Local first. Open protocols. Physical control.
 
@@ -70,8 +71,8 @@ uses the authenticated node learning API documented below.
 | Milestone | Current implementation | Physical evidence |
 |---|---|---|
 | A capture | RMT RX → USB JSON → host decode | PASS: 1838 + Strong remote, 3 matching NEC frames (0x88 / 0x01) |
-| B replay | Persistent learned signal → RMT TX, physical/software enable | Volume display responds; actual volume change not yet confirmed |
-| C network | Pinned HTTPS node and registered Logitech commands | Wi-Fi and decoded IR verified; volume change pending |
+| B replay | Persistent learned signal → RMT TX, physical/software enable | User-confirmed volume change after NEC repeat correction |
+| C network | Pinned HTTPS node and registered Logitech commands | Fast authenticated Wi-Fi volume control user-confirmed |
 | D voice | Authenticated gateway and TV app with exact Swedish aliases | Gateway deployed; phone spoken test pending |
 | E discovery | Configured node inventory API; verified EutherNet gap | Registration unavailable in inspected API |
 | F expansion | Multiple logical devices/nodes in core; persistent duplicate protection | Single physical HTTPS node verified; multi-node setup pending |

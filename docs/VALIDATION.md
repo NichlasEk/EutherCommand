@@ -1,9 +1,10 @@
 # Validation — 2026-10-10
 
 
-**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
-IR wakes the Logitech volume display but has not been shown to change the volume.
-Earlier successful-response notes below are historical and superseded.
+**Physical confirmation, 2026-10-10:** after the NEC repeat-frame correction and
+fast Wi-Fi/app update, the user reports “Det funkar kanon!”. The at-TV volume
+trial is now user-confirmed. Earlier single-frame results remain superseded;
+this does not verify a second installation or spoken multi-TV routing.
 
 ## Verified on this host
 

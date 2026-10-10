@@ -1,4 +1,4 @@
-# Fast Wi-Fi volume path — implementation under physical validation
+# Fast Wi-Fi volume path — user-confirmed at-TV trial
 
 User correction: the old single-frame signals illuminate the Logitech volume
 display but do **not** yet have confirmed volume-change behavior. Retain original
@@ -79,3 +79,10 @@ Apps: Vox 0.20.0-beta.3 (67), Beam 0.1.0-alpha.14 (14), both build/lint/unit tes
 pass. Emulator buttons dispatch through the mock gateway without waiting for a
 success response. Update both apps. After powering the node, allow about ten
 seconds for Wi-Fi and the background authenticated clock refresh.
+
+## At-TV result, 2026-10-10
+
+After installing the fast-path update with the NEC repeat frame, the user reports
+“Det funkar kanon!”. This confirms the requested volume trial works on the
+current installation. No numerical end-to-end latency measurement or second-room
+trial was performed. Voice aliases and two-TV routing are the next work.

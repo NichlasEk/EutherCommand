@@ -1,9 +1,10 @@
 # Current handoff — 2026-10-10
 
 
-**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
-IR wakes the Logitech volume display but has not been shown to change the volume.
-Earlier successful-response notes below are historical and superseded.
+**Physical confirmation, 2026-10-10:** after the NEC repeat-frame correction and
+fast Wi-Fi/app update, the user reports “Det funkar kanon!”. The at-TV volume
+trial is now user-confirmed. Earlier single-frame results remain superseded;
+this does not verify a second installation or spoken multi-TV routing.
 
 Physical node: 192.168.32.248, ESP32 classic, RX D27, TX D26. USB /dev/ttyUSB0.
 Learning/NVS/HTTPS/session-renewal plus authenticated UDP fast volume firmware flashed and verified. Activity GPIO
@@ -25,4 +26,6 @@ The earlier network-only capture window expired without a supplied remote signal
 Current fast transport: docs/FAST_IR.md. Live gateway-to-UDP trial emitted one
 volume-down press and the physical receiver decoded NEC 8/14. The node adds one
 NEC repeat at 110 ms; total IR press 121.81 ms. No command ACK or retry. At-TV
-volume change and perceived latency are pending the user's new trial.
+volume change and fast operation are now user-confirmed (“Det funkar kanon!”).
+Natural Swedish volume routing for two TV names is being added in EutherVox;
+room mapping and node assignments await the user.
