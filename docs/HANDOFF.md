@@ -29,3 +29,15 @@ NEC repeat at 110 ms; total IR press 121.81 ms. No command ACK or retry. At-TV
 volume change and fast operation are now user-confirmed (“Det funkar kanon!”).
 Natural Swedish volume routing for two TV names is being added in EutherVox;
 room mapping and node assignments await the user.
+
+## Confirmed rooms and voice routing
+
+User confirms NEC + Logitech on the ground floor, Samsung + Logitech one flight
+up, with only one ESP32 currently built. EutherVox assigns the current node to NEC
+only; Samsung is a recognized but unavailable IR target. Downstairs aliases:
+bottenvåningen/nedervåningen/nere/där nere. Upstairs aliases:
+övervåningen/uppe/där uppe/en trappa upp. Gateway service configuration activates
+natural volume routing without APK/firmware changes. Explicit NEC/room volume
+requests select the downstairs node; an unspecified target asks which TV or uses
+the recent same-connection selection. No success speech/ack wait is added.
+Second node provisioning and real spoken end-to-end trial remain outstanding.
