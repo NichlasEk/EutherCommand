@@ -1,5 +1,10 @@
 # Validation — 2026-10-10
 
+
+**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
+IR wakes the Logitech volume display but has not been shown to change the volume.
+Earlier successful-response notes below are historical and superseded.
+
 ## Verified on this host
 
 - 15 automated Python tests passed: authenticated HTTP learning/execution, scope

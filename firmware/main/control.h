@@ -5,3 +5,5 @@ const char *ec_ir_control(const char *operation);
 char *ec_ir_learn_begin(void);
 char *ec_ir_learn_get(void);
 const char *ec_ir_register(const char *name, cJSON *signal);
+
+const char *ec_ir_fast_volume(const char *operation);

@@ -10,10 +10,15 @@
 #include "setup_address.h"
 #include "cJSON.h"
 #include "control.h"
+#include "mbedtls/md.h"
+#include "fast_packet.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #if __has_include("control_local.h")
 #include "control_local.h"
 static const unsigned char cert[]=EC_CONTROL_CERT, key[]=EC_CONTROL_KEY;
-static char boot_id[33];
+static char boot_id[33],fast_epoch[33];
+static uint64_t fast_sequence;
 static struct {char id[65],op[20],status[24];} history[64];
 static unsigned history_count;
 static int64_t last_request;
@@ -36,7 +41,7 @@ static bool authorized(httpd_req_t *r) {
     memset(value,0,sizeof(value));return difference==0;
 }
 static esp_err_t response(httpd_req_t *r,const char *status,bool duplicate) {
-    char body[256];snprintf(body,sizeof(body),"{\"status\":\"%s\",\"boot_id\":\"%s\",\"duplicate\":%s,\"device_state\":\"unverified\",\"history_remaining\":%u}",status,boot_id,duplicate?"true":"false",64-history_count);
+    char body[384];snprintf(body,sizeof(body),"{\"status\":\"%s\",\"boot_id\":\"%s\",\"duplicate\":%s,\"device_state\":\"unverified\",\"history_remaining\":%u,\"fast_epoch\":\"%s\",\"uptime_ms\":%llu,\"fast_port\":7426,\"fast_enabled\":%s}",status,boot_id,duplicate?"true":"false",64-history_count,fast_epoch,(unsigned long long)(esp_timer_get_time()/1000),!strcmp(ec_ir_control("fast_status"),"enabled")?"true":"false");
     httpd_resp_set_type(r,"application/json");httpd_resp_set_hdr(r,"Cache-Control","no-store");
     return httpd_resp_sendstr(r,body);
 }
@@ -109,8 +114,39 @@ static esp_err_t register_signal(httpd_req_t *r){
     const char *result=cJSON_IsString(name)?ec_ir_register(name->valuestring,signal):"invalid";
     cJSON_Delete(root);return response(r,result,false);
 }
+/* One datagram is one attempt. No ACK, retries or backlog. HMAC key never crosses UDP. */
+static void fast_worker(void *arg) {
+    (void)arg;int sock=-1;uint32_t bound_ip=0;
+    for(;;) {
+        esp_netif_ip_info_t ip={0};esp_netif_t *sta=esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+        if(sta)esp_netif_get_ip_info(sta,&ip);
+        if(sock>=0 && bound_ip!=ip.ip.addr){close(sock);sock=-1;}
+        if(!ip.ip.addr){vTaskDelay(pdMS_TO_TICKS(200));continue;}
+        if(sock<0){
+            sock=socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+            struct sockaddr_in addr={.sin_family=AF_INET,.sin_port=htons(7426),.sin_addr.s_addr=ip.ip.addr};
+            struct timeval timeout={.tv_sec=0,.tv_usec=200000};
+            if(sock<0){vTaskDelay(pdMS_TO_TICKS(200));continue;}
+            setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));
+            if(bind(sock,(struct sockaddr*)&addr,sizeof(addr))<0){close(sock);sock=-1;vTaskDelay(pdMS_TO_TICKS(200));continue;}
+            bound_ip=ip.ip.addr;
+        }
+        char body[192],copy[192];int n=recv(sock,body,sizeof(body)-1,0);if(n<=0)continue;vTaskDelay(1);body[n]=0;
+        memcpy(copy,body,n+1);uint64_t seq;char *direction,*signature;
+        if(!ec_fast_parse(copy,n,fast_epoch,esp_timer_get_time()/1000,fast_sequence,&seq,&direction,&signature))continue;
+        size_t signed_len=(size_t)(strrchr(body,'|')-body);unsigned char mac[32];
+        if(mbedtls_md_hmac(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),(const unsigned char*)EC_CONTROL_TOKEN,strlen(EC_CONTROL_TOKEN),(unsigned char*)body,signed_len,mac)!=0)continue;
+        unsigned diff=0;const char hex[]="0123456789abcdef";
+        for(unsigned i=0;i<32;i++){diff|=(unsigned)(signature[2*i]^hex[mac[i]>>4]);diff|=(unsigned)(signature[2*i+1]^hex[mac[i]&15]);}
+        if(diff)continue;
+        fast_sequence=seq; /* Consume even if output is busy/blocked; never replay later. */
+        const char *result=ec_ir_fast_volume(!strcmp(direction,"up")?"volume_up":"volume_down");
+        printf("{\"event\":\"fast_volume\",\"direction\":\"%s\",\"status\":\"%s\"}\n",direction,result);
+    }
+}
 void ec_control_start(void) {
     if(started)return;
+    for(unsigned i=0;i<16;i++)sprintf(fast_epoch+2*i,"%02x",(unsigned)(esp_random()&255));
     new_epoch();
     httpd_ssl_config_t cfg=HTTPD_SSL_CONFIG_DEFAULT();
     cfg.servercert=cert;cfg.servercert_len=sizeof(cert);cfg.prvtkey_pem=key;cfg.prvtkey_len=sizeof(key);
@@ -118,6 +154,7 @@ void ec_control_start(void) {
     httpd_handle_t server=NULL;ESP_ERROR_CHECK(httpd_ssl_start(&server,&cfg));
     httpd_uri_t routes[]={ {.uri="/v1/session",.method=HTTP_POST,.handler=renew_session}, {.uri="/v1/status",.method=HTTP_GET,.handler=status_handler}, {.uri="/v1/commands",.method=HTTP_POST,.handler=execute}, {.uri="/v1/learn",.method=HTTP_POST,.handler=learn_begin}, {.uri="/v1/learn",.method=HTTP_GET,.handler=learn_get}, {.uri="/v1/signals",.method=HTTP_POST,.handler=register_signal} };
     for(unsigned i=0;i<sizeof(routes)/sizeof(routes[0]);i++)ESP_ERROR_CHECK(httpd_register_uri_handler(server,&routes[i]));
+    xTaskCreate(fast_worker,"ir_fast",6144,NULL,5,NULL);
     started=true;printf("{\"event\":\"control_ready\",\"tls\":true,\"port\":443}\n");
 }
 #else

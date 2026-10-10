@@ -1,5 +1,10 @@
 # ESP32 IR bench hardware — provisional until parts are identified
 
+
+**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
+IR wakes the Logitech volume display but has not been shown to change the volume.
+Earlier successful-response notes below are historical and superseded.
+
 ## Aktuellt bänkläge — 2026-10-10
 
 Dokumenterat från USB-avläsning, användarens komponentuppgifter och fotot av

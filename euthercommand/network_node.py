@@ -56,3 +56,26 @@ class NetworkNode:
             if signal==registered:
                 return self.command(name,request_id)['status']
         raise ValueError('signal not in firmware registry')
+
+    def refresh_fast(self):
+        import time
+        state=self.status()
+        epoch=state.get('fast_epoch','')
+        if not re.fullmatch(r'[0-9a-f]{32}',epoch):raise RuntimeError('Noden behöver firmware för snabb IR')
+        if state.get('fast_port')!=7426:raise RuntimeError('Ogiltig snabbport')
+        self.fast_clock=(epoch,int(state['uptime_ms']),time.monotonic(),state.get('fast_enabled',True))
+
+    def send_fast(self,command,sequence):
+        import time,hmac
+        if command not in ('volume_up','volume_down'):raise ValueError('Snabbspåret tillåter bara Logitech-volym')
+        cached=getattr(self,'fast_clock',None)
+        if not cached or time.monotonic()-cached[2]>15:raise RuntimeError('IR-noden är inte redo; inget kommando köas')
+        epoch,uptime,stamp,enabled=cached
+        if not enabled:raise RuntimeError('IR-sändaren är avstängd')
+        if not isinstance(sequence,int) or not 0<sequence<2**64:raise ValueError('Invalid sequence')
+        deadline=uptime+int((time.monotonic()-stamp)*1000)+500
+        body=f'EC1|{epoch}|{sequence:016x}|{deadline:016x}|{command.removeprefix("volume_")}'.encode('ascii')
+        packet=body+b'|'+hmac.new(self.config['token'].encode(),body,hashlib.sha256).hexdigest().encode('ascii')
+        with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as sock:
+            sock.sendto(packet,(self.config['host'],7426))
+        return 'dispatched' # Only local send; no receiver or appliance acknowledgement.

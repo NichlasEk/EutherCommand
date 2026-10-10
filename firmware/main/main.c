@@ -26,6 +26,7 @@
 #include "freertos/semphr.h"
 #include "control.h"
 #include "registered_signals.h"
+#include "nec_press.h"
 
 static QueueHandle_t received;
 static rmt_channel_handle_t rx, tx;
@@ -33,6 +34,8 @@ static rmt_encoder_handle_t encoder;
 static rmt_symbol_word_t capture[256];
 static nvs_handle_t store;
 static bool disabled = true;
+static bool fast_blocked;
+static bool fast_operation;
 static int64_t last_tx;
 static int64_t arm_deadline;
 static unsigned bench_sends;
@@ -116,7 +119,7 @@ static void command(char *line) {
         disabled = true;
         if (ec_wifi_setup_next_boot() != ESP_OK) { emit("storage_error"); goto done; }
         emit("restarting"); fflush(stdout); vTaskDelay(pdMS_TO_TICKS(100)); esp_restart();
-    } else if (!strcmp(op->valuestring, "disable")) { disabled = true; network_until=0; network_remaining=0; emit("disabled"); }
+    } else if (!strcmp(op->valuestring, "disable")) { fast_blocked=true;disabled = true; network_until=0; network_remaining=0; emit("disabled"); }
     else if (!strcmp(op->valuestring, "arm")) {
         arm_deadline = esp_timer_get_time() + 2000000;
         disabled = false;
@@ -199,18 +202,18 @@ const char *ec_ir_register(const char *name,cJSON *signal) {
     xSemaphoreGive(ir_lock);free(text);return result;
 }
 /* Shared lock serializes USB and LAN access to the RMT peripheral. */
-const char *ec_ir_control(const char *operation) {
-    xSemaphoreTake(ir_lock,portMAX_DELAY);
+static const char *control_locked(const char *operation) {
     const char *result="invalid";
     int64_t now=esp_timer_get_time();
-    if(!strcmp(operation,"status"))result=network_remaining && now<network_until?"enabled":"disabled";
-    else if(!strcmp(operation,"disable")){network_until=0;network_remaining=0;disabled=true;result="disabled";}
+    if(!strcmp(operation,"fast_status"))result=fast_blocked?"disabled":"enabled";
+    else if(!strcmp(operation,"status"))result=network_remaining && now<network_until?"enabled":"disabled";
+    else if(!strcmp(operation,"disable")){fast_blocked=true;network_until=0;network_remaining=0;disabled=true;result="disabled";}
     else if(!strcmp(operation,"enable")){
-        network_until=now+60000000;network_remaining=3;result="enabled";
+        fast_blocked=false;network_until=now+60000000;network_remaining=3;result="enabled";
     } else if(!strcmp(operation,"volume_up") || !strcmp(operation,"volume_down") || (strlen(operation)==15 && !strncmp(operation,"ir_",3))) {
         if(!tx || !network_remaining || now>=network_until)result="disabled";
         else if(CONFIG_EC_ENABLE_GPIO>=0 && gpio_get_level(CONFIG_EC_ENABLE_GPIO)!=0)result="disabled";
-        else if(now-last_tx<1000000)result="rate_limited";
+        else if(now-last_tx<(fast_operation?160000:1000000))result="rate_limited";
         else {
             cJSON *signal=NULL;
             if(!strncmp(operation,"ir_",3)){
@@ -223,6 +226,7 @@ const char *ec_ir_control(const char *operation) {
             }else signal=cJSON_Parse(!strcmp(operation,"volume_up")?volume_up_json:volume_down_json);
             rmt_symbol_word_t symbols[256];size_t count;int carrier;
             bool valid=signal_symbols(signal,symbols,&count,&carrier);cJSON_Delete(signal);
+            if(valid && (!strcmp(operation,"volume_up") || !strcmp(operation,"volume_down")))valid=ec_nec_press(symbols,&count,256);
             if(valid){
                 rmt_carrier_config_t cc={.frequency_hz=carrier,.duty_cycle=.33};
                 rmt_transmit_config_t tc={.loop_count=0};
@@ -234,6 +238,20 @@ const char *ec_ir_control(const char *operation) {
                 if(err!=ESP_OK){network_until=0;network_remaining=0;}
             }
         }
+    }
+    return result;
+}
+const char *ec_ir_control(const char *operation) {
+    xSemaphoreTake(ir_lock,portMAX_DELAY);const char *result=control_locked(operation);xSemaphoreGive(ir_lock);return result;
+}
+const char *ec_ir_fast_volume(const char *operation) {
+    if(strcmp(operation,"volume_up") && strcmp(operation,"volume_down"))return "invalid";
+    if(xSemaphoreTake(ir_lock,0)!=pdTRUE)return "busy";
+    const char *result="disabled";
+    if(!fast_blocked && !(learning_until>esp_timer_get_time() && !learned_capture[0])) {
+        fast_operation=true;network_remaining=1;network_until=esp_timer_get_time()+500000;
+        result=control_locked(operation);
+        network_remaining=0;network_until=0;fast_operation=false;disabled=true;
     }
     xSemaphoreGive(ir_lock);return result;
 }
@@ -313,6 +331,7 @@ void app_main(void) {
             }
             if (previous == 0) cJSON_AddItemToArray(a, cJSON_CreateNumber(duration));
             cJSON_AddStringToObject(root,"event","capture");
+            cJSON_AddNumberToObject(root,"observed_us",(double)esp_timer_get_time());
             cJSON_AddBoolToObject(root,"possibly_truncated", event.num_symbols >= 64 /* classic ESP32 RX hardware capacity */);
             cJSON_AddStringToObject(root,"carrier_source","assumed_receiver_nominal");
             cJSON_AddNumberToObject(root,"carrier_hz",38000);

@@ -1,5 +1,10 @@
 # EutherCommand
 
+
+**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
+IR wakes the Logitech volume display but has not been shown to change the volume.
+Earlier successful-response notes below are historical and superseded.
+
 **Give the Digital World Hands.** Local first. Open protocols. Physical control.
 
 **From intention to action.**
@@ -65,8 +70,8 @@ uses the authenticated node learning API documented below.
 | Milestone | Current implementation | Physical evidence |
 |---|---|---|
 | A capture | RMT RX → USB JSON → host decode | PASS: 1838 + Strong remote, 3 matching NEC frames (0x88 / 0x01) |
-| B replay | Persistent learned signal → RMT TX, physical/software enable | Logitech volume-down response confirmed by user |
-| C network | Pinned HTTPS node and registered Logitech commands | Wi-Fi persistence and Logitech response verified |
+| B replay | Persistent learned signal → RMT TX, physical/software enable | Volume display responds; actual volume change not yet confirmed |
+| C network | Pinned HTTPS node and registered Logitech commands | Wi-Fi and decoded IR verified; volume change pending |
 | D voice | Authenticated gateway and TV app with exact Swedish aliases | Gateway deployed; phone spoken test pending |
 | E discovery | Configured node inventory API; verified EutherNet gap | Registration unavailable in inspected API |
 | F expansion | Multiple logical devices/nodes in core; persistent duplicate protection | Single physical HTTPS node verified; multi-node setup pending |
@@ -94,3 +99,5 @@ This is user-observed response; automated appliance-state feedback is absent.
 
 The Android TV tab now includes EutherBeam and authenticated IR learning with
 user-owned spoken aliases. See [deployment, workflow and validation](docs/EUTHERVOX.md).
+
+Fast Logitech volume without acknowledgements: [protocol and evidence](docs/FAST_IR.md).

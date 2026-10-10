@@ -1,5 +1,10 @@
 # EutherVox TV apparater integration — 2026-10-10
 
+
+**Correction, 2026-10-10:** the user withdrew the earlier volume-change confirmation.
+IR wakes the Logitech volume display but has not been shown to change the volume.
+Earlier successful-response notes below are historical and superseded.
+
 The Android feature branch `feature/tv-apparater` in `/home/nichlas/EutherVox`
 provides the **TV apparater** tab in 0.20.0-beta.1 (version code 65).
 
