@@ -1,0 +1,30 @@
+# Secrets are supplied through the environment, never stored here.
+[node.lab]
+transport = "infrared"
+
+[device.test_amplifier]
+name = "Testförstärkaren"
+category = "audio"
+transport = "infrared"
+node = "lab"
+[device.test_amplifier.commands]
+power = "learned:amp_power"
+
+[device.logitech_audio]
+name = "Logitech ljudsystem"
+category = "audio"
+transport = "infrared"
+node = "lab"
+[device.logitech_audio.commands]
+volume_up = "learned:logitech_volume_up"
+volume_down = "learned:logitech_volume_down"
+
+[principal.operator]
+token_env = "EUTHERCOMMAND_OPERATOR_TOKEN"
+scopes = ["read", "execute", "learn", "disable"]
+devices = ["test_amplifier", "logitech_audio"]
+
+[principal.vox]
+token_env = "EUTHERCOMMAND_VOX_TOKEN"
+scopes = ["read", "execute"]
+devices = ["test_amplifier"]

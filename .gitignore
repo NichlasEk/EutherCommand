@@ -1,0 +1,10 @@
+.local/
+__pycache__/
+*.pyc
+firmware/build/
+firmware/sdkconfig
+firmware/sdkconfig.old
+.env
+firmware/main/wifi_setup_local.h
+firmware/main/control_local.h
+*.egg-info/

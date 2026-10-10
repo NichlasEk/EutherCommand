@@ -1,0 +1,4 @@
+# Receive-only bench profile; classic ESP32, user wired D27.
+CONFIG_EC_RX_GPIO=27
+CONFIG_EC_TX_GPIO=-1
+CONFIG_EC_ENABLE_GPIO=-1

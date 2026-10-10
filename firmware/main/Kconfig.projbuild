@@ -1,0 +1,23 @@
+menu "EutherCommand (confirm board pins before enabling)"
+config EC_RX_GPIO
+    int "IR receiver GPIO (-1 disables hardware)"
+    default -1
+config EC_TX_GPIO
+    int "IR driver GPIO (-1 disables hardware)"
+    default -1
+config EC_ENABLE_GPIO
+    int "Physical TX enable GPIO: pull to GND to arm"
+    default -1
+config EC_USB_BENCH_ARM
+    bool "USB-only bench: allow one-shot software arm without enable GPIO"
+    default n
+    help
+        Explicit bench-only alternative to physical enable. Arm expires in two
+        seconds and permits one frame; at most three sends per boot. No network.
+config EC_ACTIVITY_GPIO
+    int "Optional verified activity LED GPIO (-1 disables)"
+    default -1
+config EC_ACTIVITY_ACTIVE_LOW
+    bool "Activity LED is active low"
+    default n
+endmenu

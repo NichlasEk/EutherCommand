@@ -1,0 +1,5 @@
+# Reviewed bench pins. One-shot software arm, max three sends per boot.
+CONFIG_EC_RX_GPIO=27
+CONFIG_EC_TX_GPIO=26
+CONFIG_EC_ENABLE_GPIO=-1
+CONFIG_EC_USB_BENCH_ARM=y

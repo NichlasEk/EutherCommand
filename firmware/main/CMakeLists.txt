@@ -1,0 +1,1 @@
+idf_component_register(SRCS "main.c" "wifi_setup.c" "control.c" INCLUDE_DIRS "." EMBED_TXTFILES "setup.html" REQUIRES esp_driver_rmt esp_driver_gpio nvs_flash json esp_timer esp_system esp_wifi esp_netif esp_event esp_http_server esp_https_server)
