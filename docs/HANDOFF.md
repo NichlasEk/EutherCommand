@@ -54,3 +54,15 @@ setup at 192.168.4.1. Unique node credentials and firmware binaries remain ignor
 User wants Wi-Fi/software first, soldering afterward. Household association,
 TLS/disabled-TX live checks and final upstairs target activation still pending.
 See submodule README for build, wiring, protocol and manual USB recovery limitations.
+
+## Upstairs Wi-Fi verified — 2026-10-10
+
+User successfully completed ESP8266 phone provisioning. Node is now at
+192.168.32.253, USB log `ready`, free heap 40488. Private client config:
+`nodes/esp8266/.local/client.json`. Live disabled-TX test passed pinned HTTPS,
+authentication/HMAC, duplicate and deadline guards, invalid epoch/direction/size,
+and no UDP acknowledgement. Two accepted test packets, zero transmissions.
+TX left disabled; reboot restores readiness but still requires signed commands.
+Do not activate the Samsung target in Vox until the user's soldered circuit is
+ready. No receiver is fitted; no actual optical output/Logitech response tested.
+Phone provisioning failure is resolved in user observation, root cause unknown.
