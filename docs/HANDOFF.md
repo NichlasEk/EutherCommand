@@ -41,3 +41,16 @@ natural volume routing without APK/firmware changes. Explicit NEC/room volume
 requests select the downstairs node; an unspecified target asks which TV or uses
 the recent same-connection selection. No success speech/ack wait is added.
 Second node provisioning and real spoken end-to-end trial remain outstanding.
+
+## ESP8266 upstairs submodule — 2026-10-10
+
+`nodes/esp8266` is the separate private GitHub repository
+https://github.com/NichlasEk/EutherCommand-ESP8266. ESP8266EX / 4 MB flash /
+MAC 80:7d:3a:3e:20:fc / USB CP2102; user confirms D2 and the same transistor/LED
+components. TX GPIO4, no receiver yet. Full 4 MB original flash backup and checksum
+are ignored under `.local/backups/esp8266-before-tx-20261010.*`. Firmware 0.1.0
+built, flashed with hash verification, booted into password-protected phone Wi-Fi
+setup at 192.168.4.1. Unique node credentials and firmware binaries remain ignored.
+User wants Wi-Fi/software first, soldering afterward. Household association,
+TLS/disabled-TX live checks and final upstairs target activation still pending.
+See submodule README for build, wiring, protocol and manual USB recovery limitations.

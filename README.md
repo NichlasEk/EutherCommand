@@ -102,3 +102,11 @@ The Android TV tab now includes EutherBeam and authenticated IR learning with
 user-owned spoken aliases. See [deployment, workflow and validation](docs/EUTHERVOX.md).
 
 Fast Logitech volume without acknowledgements: [protocol and evidence](docs/FAST_IR.md).
+
+### ESP8266 transmit-only node
+
+The separate [ESP8266 node](nodes/esp8266/README.md) is a Git submodule for the
+upstairs Logitech system. It has no receiver or learning yet. Clone with
+`git submodule update --init nodes/esp8266` (access to the private subrepo required).
+It reuses the authenticated fast volume protocol; node credentials are generated
+locally and never tracked. See its README for provisioning, tests and wiring.
