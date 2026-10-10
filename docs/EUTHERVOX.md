@@ -74,3 +74,14 @@ verified with the user's devices.
   phone voice and TV pairing require physical follow-up.
 - Multi-node configuration/discovery, node OTA/rollback, flash encryption and
   secure boot remain future work. The current implementation is a single-node beta.
+
+## Direct Logitech buttons (beta.2 / Beam alpha.13)
+
+Always-visible up/down buttons now sit above voice controls in Vox and above the
+TV tabs in standalone Beam. Beam uses a signature-protected local broadcast to
+the already-authenticated Vox controller; no ESP32 credentials are copied into
+Beam. Gateway operation `logitech` accepts only `up` or `down` and resolves the
+current user's registered command. One tap, one request ID, no automatic repeat.
+Both Android builds/lint/tests and 9 focused server tests pass. Emulator tested
+both directions in both apps using a mock transmitter; unauthorized broadcasts
+are denied. Physical aiming remains the user's observation.
