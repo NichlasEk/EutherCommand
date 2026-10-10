@@ -66,3 +66,18 @@ TX left disabled; reboot restores readiness but still requires signed commands.
 Do not activate the Samsung target in Vox until the user's soldered circuit is
 ready. No receiver is fitted; no actual optical output/Logitech response tested.
 Phone provisioning failure is resolved in user observation, root cause unknown.
+
+## Per-TV controls deployed — 2026-10-10
+
+User has soldered the ESP8266 TX circuit and temporarily placed it downstairs.
+EutherVox now maps `samsung` to private ESP8266 client config at .253; `nec` still
+maps to ESP32 .248. The new node's pinned status reports ready; old node was
+unreachable during the last check. Clock refreshes run independently per node.
+Vox beta.4/code68 and Beam alpha.15/code15 provide separate named up/down cards.
+New signature-protected Beam broadcast requires explicit target; older Vox rejects
+it instead of sending to the wrong room. Update both apps. Colors follow Vox's
+classic/System Regis themes and standalone Beam's established dark palette.
+47 focused gateway tests, Android builds/lint/unit tests and eight emulator button
+routes passed. APKs published, upload hashes match, Beam public hash matches;
+Vox requires authenticated download. User prompted to test Samsung down/up on the
+new ESP8266 while it is temporarily downstairs. Physical volume result pending.
